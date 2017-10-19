@@ -23,7 +23,7 @@ var beerSearchVal = beerSearchVal.split(' ').join('_');
 
            var getBeerName = $('<p>').html(response.data[0].name);
             $("#beerName").html(getBeerName);
-            $("#beerLogo").html("<img src=" + response.data[0].labels.icon +" >");
+            $("#beerLogo").html("<img src=" + response.data[0].labels.medium +" >");
             var getBeerStyle = $('<label>').html(response.data[0].style.name);
               $("#beerStyle").html(getBeerStyle);
             var getBeerDescription = $('<label>').html(response.data[0].description);
