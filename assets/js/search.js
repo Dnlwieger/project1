@@ -130,7 +130,7 @@ searchBrewsInTown(searchLat, searchLong);
          function searchBrewsInTown(searchLat, searchLong) {
         var authKey = "6bf963895d0729291380bc463329fa0e";
         //var queryURL = "http://api.brewerydb.com/v2/locations?locality=cary&key=6bf963895d0729291380bc463329fa0e";
-        var queryURL2 = "http://api.brewerydb.com/v2/search/geo/point?lat=" + searchLat + "&lng=" + searchLong + "&key=" + authKey;
+        var queryURL2 = "https://api.brewerydb.com/v2/search/geo/point?lat=" + searchLat + "&lng=" + searchLong + "&key=" + authKey;
 // 
         $.ajax({
             url: queryURL2,
