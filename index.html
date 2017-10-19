@@ -1,20 +1,415 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-	<title>Sud Sensei</title>
-		<!-- JQUERY -->
-<script src="https://code.jquery.com/jquery-3.2.1.js" integrity="sha256-DZAnKJ/6XZ9si04Hgrsxu/8s717jcIzLy3oi35EouyE=" crossorigin="anonymous"></script>
-
-	<!-- Materialize (CSS) -->
-	 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.100.2/css/materialize.min.css">
-	 <!-- Materialize (Javascript) -->
-     <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.100.2/js/materialize.min.js"></script>
-
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="utf-8">
+  <title>SudSensei</title>
+    <style>
+    /* Always set the map height explicitly to define the size of the div
+     * element that contains the map. */
+    #map {
+      height: 100%;
+      width: 100%;
+    }
+    </style>
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <link href="assets/css/materialize.css" type="text/css" rel="stylesheet" media="screen,projection"/>
+  <link href="assets/css/style.css" type="text/css" rel="stylesheet" media="screen,projection"/>
+  <script src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
+  <script src="assets/js/materialize.js"></script>
+  <script src="assets/js/init.js"></script>
 </head>
+
 <body>
-	<button id="button">Search</button>
-	<input id="info" type="text" name="">
-	<div id="listArea"></div>
-<script type="text/javascript" src="assets/javascript/app.js"></script>
+  <div id="index-banner" class="parallax-container">
+    <div class="section no-pad-bot">
+      <div class="container">
+        <p><font face="webfontregular">Sud Sensei</font></p>
+      <div class="row center">
+      <h4 class="header col s12 light">Finding your hoppiness one brew at a time</h4>
+      </div>
+    </div>
+  </div>
+
+  <div class="parallax"><img src="assets/images/background3.jpg" alt="SudSensei"></div>
+  </div>
+  <div class="container">
+    <div class="section">
+    <h3><i class="medium material-icons">local_drink</i> [BREW LOCATOR]</h3><br>
+<!-- inputs for search -->
+    <form role="form">
+<!-- search box -->
+    <div class="form-group">
+      <label for="searchCity">City:</label>
+      <input type="text" class="form-control" id="searchCity">
+    </form>
+  </div>
+<!-- submit and clear buttons -->
+    <button type="submit" class="btn btn-default" id="runSearch"><i class="fa fa-search"></i>Search</button>
+    <button type="submit" class="btn btn-default" id="clearAll"><i class="fa fa-search"></i>Clear</button><br><br>
+  <div class="panel panel-primary">
+    <div class="panel-body">
+      <table class="highlight bordered centered responsive-table" id="breweryResults">
+        <thead>
+        <tr>
+        <th>Brewery Name</th>
+        <th>Location</th>
+        <th>Phone</th>
+        <th>Website</th>
+        </tr>
+        </thead>
+        <tbody id="tbodyid">
+<!-- where search results populate -->
+        </tbody>
+      </table>
+    </div><br>
+
+<!-- google map -->
+    <div id="map">
+    </div>
+  </div>
+  </div>
+  </div>
+
+
+
+
+  <div class="container">
+    <div class="section">
+<h3><i class="medium material-icons">local_drink</i> [SWEEP THE KEG]</h3><br>
+<!-- inputs for search -->
+    <form role="form">
+<!-- search box -->
+    <div class="form-group">
+      <label for="searchBeer">Name of a Beer:</label>
+      <input type="text" class="form-control" id="searchBeer">
+    </form>
+  </div>
+
+<!-- Modal Trigger -->
+  <a class="waves-effect waves-light btn modal-trigger" href="#modal1">Beer Information</a>
+
+ <!-- Modal Structure -->
+  <div id="modal1" class="modal bottom-sheet">
+    <div class="modal-content">
+      <h5>Beer Search Results:</h5>
+      <div id="beerDescription"></div>
+      <!-- <div ><img id="beerLabel"></div> -->
+       <div id="beerAbv"></div>
+    </div>
+    <div class="modal-footer">
+      <a href="#!" class="modal-action modal-close waves-effect waves-green btn-flat"></a>
+    </div>
+  </div></div></div><br>
+
+<script>
+
+
+    // Note: This example requires that you consent to location sharing when
+    // prompted by your browser. If you see the error "The Geolocation service
+    // failed.", it means you probably did not give permission for the browser to
+    // locate you.
+    var map, infoWindow;
+    function initMap() {
+      map = new google.maps.Map(document.getElementById('map'), {
+        center: {lat: 50.1960, lng: 6.8712},
+        zoom: 6
+      });
+      infoWindow = new google.maps.InfoWindow;
+      // Try HTML5 geolocation.
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(function(position) {
+          var pos = {
+            lat: position.coords.latitude,
+            lng: position.coords.longitude
+          };
+          infoWindow.setPosition(pos);
+          infoWindow.setContent('Location found.');
+          infoWindow.open(map);
+          map.setCenter(pos);
+        }, function() {
+          handleLocationError(true, infoWindow, map.getCenter());
+        });
+      } else {
+        // Browser doesn't support Geolocation
+        handleLocationError(false, infoWindow, map.getCenter());
+      }
+    };
+    function handleLocationError(browserHasGeolocation, infoWindow, pos) {
+      infoWindow.setPosition(pos);
+      infoWindow.setContent(browserHasGeolocation ?
+                            'Error: The Geolocation service failed.' :
+                            'Error: Your browser doesn\'t support geolocation.');
+      infoWindow.open(map);
+    };
+// This example adds a search box to a map, using the Google Place Autocomplete
+// feature. People can enter geographical searches. The search box will return a
+// pick list containing a mix of places and predicted search terms.
+// This example requires the Places library. Include the libraries=places
+// parameter when you first load the API. For example:
+// <script src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY&libraries=places">
+    function initAutocomplete() {
+      var map = new google.maps.Map(document.getElementById('map'), {
+        center: {lat: 50.1960, lng: 6.8712},
+        zoom: 13,
+        mapTypeId: 'roadmap'
+      });
+    // Create the search box and link it to the UI element.
+    //<<< Need to link search term (city) to breweryDB >>>
+    
+    var input = document.getElementById('pac-input');
+    var searchBox = new google.maps.places.SearchBox(input);
+    map.controls[google.maps.ControlPosition.TOP_LEFT].push(input);
+    // Bias the SearchBox results towards current map's viewport.
+    map.addListener('bounds_changed', function() {
+      searchBox.setBounds(map.getBounds());
+    });
+    var markers = [];
+    // Listen for the event fired when the user selects a prediction and retrieve
+    // more details for that place.
+    searchBox.addListener('places_changed', function() {
+        var places = searchBox.getPlaces();
+        if (places.length == 0) {
+          return;
+        }
+        // Clear out the old markers.
+        markers.forEach(function(marker) {
+          marker.setMap(null);
+        });
+        markers = [];
+        // For each place, get the icon, name and location.
+        var bounds = new google.maps.LatLngBounds();
+            places.forEach(function(place) {
+              if (!place.geometry) {
+                console.log("Returned place contains no geometry");
+                return;
+              }
+              var icon = {
+                url: place.icon,
+                size: new google.maps.Size(71, 71),
+                origin: new google.maps.Point(0, 0),
+                anchor: new google.maps.Point(17, 34),
+                scaledSize: new google.maps.Size(25, 25)
+              };
+              // Create a marker for each place.
+              markers.push(new google.maps.Marker({
+                map: map,
+                icon: icon,
+                title: place.name,
+                position: place.geometry.location
+              }));
+              if (place.geometry.viewport) {
+                // Only geocodes have viewport.
+                bounds.union(place.geometry.viewport);
+              } else {
+                bounds.extend(place.geometry.location);
+              }
+            });
+            map.fitBounds(bounds);
+        });
+    };
+    var map, infoWindow;
+    function initMap() {
+      map = new google.maps.Map(document.getElementById('map'), {
+        center: {lat: 50.1960, lng: 6.8712},
+        zoom: 6
+      });
+      infoWindow = new google.maps.InfoWindow;
+      // Try HTML5 geolocation.
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(function(position) {
+          var pos = {
+            lat: position.coords.latitude,
+            lng: position.coords.longitude
+          };
+          infoWindow.setPosition(pos);
+          infoWindow.setContent('Location found.');
+          infoWindow.open(map);
+          map.setCenter(pos);
+        }, function() {
+          handleLocationError(true, infoWindow, map.getCenter());
+        });
+      } else {
+        // Browser doesn't support Geolocation
+        handleLocationError(false, infoWindow, map.getCenter());
+      }
+    };
+    function handleLocationError(browserHasGeolocation, infoWindow, pos) {
+      infoWindow.setPosition(pos);
+      infoWindow.setContent(browserHasGeolocation ?
+                            'Error: The Geolocation service failed.' :
+                            'Error: Your browser doesn\'t support geolocation.');
+      infoWindow.open(map);
+    };
+// This example adds a search box to a map, using the Google Place Autocomplete
+// feature. People can enter geographical searches. The search box will return a
+// pick list containing a mix of places and predicted search terms.
+// This example requires the Places library. Include the libraries=places
+// parameter when you first load the API. For example:
+// <script src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY&libraries=places">
+    function initAutocomplete() {
+      var map = new google.maps.Map(document.getElementById('map'), {
+        center: {lat: 50.1960, lng: 6.8712},
+        zoom: 13,
+        mapTypeId: 'roadmap'
+      });
+    // Create the search box and link it to the UI element.
+    //<<< Need to link search term (city) to breweryDB >>>
+    
+    var input = document.getElementById('pac-input');
+    var searchBox = new google.maps.places.SearchBox(input);
+    map.controls[google.maps.ControlPosition.TOP_LEFT].push(input);
+    // Bias the SearchBox results towards current map's viewport.
+    map.addListener('bounds_changed', function() {
+      searchBox.setBounds(map.getBounds());
+    });
+    var markers = [];
+    // Listen for the event fired when the user selects a prediction and retrieve
+    // more details for that place.
+    searchBox.addListener('places_changed', function() {
+        var places = searchBox.getPlaces();
+        if (places.length == 0) {
+          return;
+        }
+        // Clear out the old markers.
+        markers.forEach(function(marker) {
+          marker.setMap(null);
+        });
+        markers = [];
+        // For each place, get the icon, name and location.
+        var bounds = new google.maps.LatLngBounds();
+            places.forEach(function(place) {
+              if (!place.geometry) {
+                console.log("Returned place contains no geometry");
+                return;
+              }
+              var icon = {
+                url: place.icon,
+                size: new google.maps.Size(71, 71),
+                origin: new google.maps.Point(0, 0),
+                anchor: new google.maps.Point(17, 34),
+                scaledSize: new google.maps.Size(25, 25)
+              };
+              // Create a marker for each place.
+              markers.push(new google.maps.Marker({
+                map: map,
+                icon: icon,
+                title: place.name,
+                position: place.geometry.location
+              }));
+              if (place.geometry.viewport) {
+                // Only geocodes have viewport.
+                bounds.union(place.geometry.viewport);
+              } else {
+                bounds.extend(place.geometry.location);
+              }
+            });
+            map.fitBounds(bounds);
+        });
+    };
+
+
+
+    // On click function for Search button
+ $("#runSearch").on("click", function(){
+  searchVal = $("#searchCity").val().trim();
+
+    //Empties the search results section
+$("#tbodyid").empty();
+
+ 
+  geoURL = "https://maps.googleapis.com/maps/api/geocode/json?address="+ searchVal +"&key=AIzaSyAUDOon4WO3ZCaMTAeTtmIXVH_6_I9gi_M";
+  console.log(searchVal);
+
+  $(document).ready(function() {
+    console.log( "ready!" );
+//  takes a CITY NAME and returns latitude and longitude for the brewery API
+$.ajax({
+      url: geoURL,
+      method: 'GET'
+    })
+    .done(function(response) {
+         console.log(response);
+         console.log(response.results[0].geometry.location.lat);
+         console.log(response.results[0].geometry.location.lng);
+         var searchLat = response.results[0].geometry.location.lat;
+         var searchLong = response.results[0].geometry.location.lng;
+
+searchBrewsInTown(searchLat, searchLong); 
+})
+         function searchBrewsInTown(searchLat, searchLong) {
+        var authKey = "6bf963895d0729291380bc463329fa0e";
+        //var queryURL = "http://api.brewerydb.com/v2/locations?locality=cary&key=6bf963895d0729291380bc463329fa0e";
+        var queryURL2 = "http://api.brewerydb.com/v2/search/geo/point?lat=" + searchLat + "&lng=" + searchLong + "&radius=5" + "&key=" + authKey;
+// 
+        $.ajax({
+            url: queryURL2,
+            method: "GET"
+        })
+        .done(function(results) {
+            console.log(results);
+            var brewsResults = results.data;
+            for (var i = 0; i < brewsResults.length; i++) {
+                
+              console.log(results.data[i].brewery.name);      
+              console.log(results.data[i].streetAddress);
+              console.log(results.data[i].locality);
+              console.log(results.data[i].phone)        
+              console.log(results.data[i].website);
+              console.log(results.data[i].latitude);
+              console.log(results.data[i].longitude);
+
+
+
+
+  //Code to append results
+                var tr = $('<tr>');
+                var tdName = $('<td>').append(results.data[i].brewery.name);
+                var tdAddress = $('<td>').append(results.data[i].streetAddress);
+                var tdPhone = $('<td>').append(results.data[i].phone); 
+                var tdWebsite = $('<td>').append("<a href='" + results.data[i].website + "'>" + results.data[i].website + "</a>");
+    
+                tr.append(tdName, tdAddress, tdPhone, tdWebsite );
+                $('tbody').append(tr);       
+            } 
+        })
+    }
+ })
+})
+
+
+
+  //This button clears the results section
+  $('#clearAll').on('click', function () {
+    $('#tbodyid').empty();
+      console.log("All Clear!");
+      });
+
+
+    </script>
+    <script async defer
+    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCAnsempD29BhwJIn-IJlwT_gySj7RYE4E&callback=initMap&libraries=places"></script>
+
+
+  <div class="parallax-container valign-wrapper">
+    <div class="row center">
+    </div>
+    <div class="parallax"><img src="assets/images/background1.jpg" alt="SudSensei"></div>
+    </div>
+  </div>
+
+  <footer class="page-footer teal">
+    <img class="responsive circle" src="assets/images/sudsensei.jpg" width="350px" height="280px">
+  </div>
+  <div class="footer-copyright">
+    <div class="container">
+      <h5 class="white-text">Made by:</h5><ul>
+      <li>Richa Contractor</li>
+      <li>Jason Kulasingam</li>
+      <li>Jason Peck</li>
+      <li>Dan Wieger</li>
+      </ul>
+    </div>
+  </footer>
 </body>
 </html>
